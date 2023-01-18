@@ -30,17 +30,7 @@
 
 class BuiltInFunctions_RadhaProgrammingLanguage{
     constructor(){
-        this.builtInFunctions = 
-                                [
-                                    "print",
-                                    "capitalize",
-                                    "casefold",
-                                    "type",
-                                    // I had to move on to a new project hence these many functions only : )
-                                    // if you want you can add some functions that mimic python built-in functions : )
-                                    // append it's name in this array and update the FunctionCaller() method : )
-                                ]
-
+        this.builtInFunctions = ["print","capitalize","casefold","type",]
         this.userDefinedFunctions = [] // empty array to store user defined functions .
     }
 
