@@ -75,7 +75,8 @@ A basic programming language that includes features of both Python and JavaScrip
       
 # Example
 
-1)```ruby
+1)
+```ruby
 
      [num = 90 ]                         # integer
      [str = "krishna" ]                  # string
@@ -99,7 +100,8 @@ A basic programming language that includes features of both Python and JavaScrip
 
 ```
 
-2) ```ruby
+2) 
+ ```ruby
 
       def FizzBuzz(num)                   
         if num % 3 is 0 and num % 5 is 0
