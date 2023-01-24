@@ -127,3 +127,7 @@ A basic programming language that includes features of both Python and JavaScrip
     {print( {FizzBuzz(19)}) }    # NoFizzNoBuzz
 
 ```
+
+# CDN 
+ 
+ https://cdn.jsdelivr.net/gh/Axnjr/Radha-Programming-Language@main/Language.js
