@@ -1,33 +1,3 @@
-/** 
- * 1) Variable declartion and assignment inside square brackets -> ex: [ x = 90 ]
- * 
- * 2) List's / array's are defined inside double square brackets -> ex: [ arr = [[1,2,3,4,5]] ]
- * 
- * 3) Dictionarie's / object's are defined inside double curly brackets -> ex: [ dict = {{"name":"Krishna","age":19}} ]
- * 
- * 4) Functions are called inside single curly brackets -> ex: { print("Hello World") }
- * 
- * 5) Functions are defined using "def" keyword and must end with ";" ( identation not neccesary )
- *      ex: 
- *          def Sum() 
- *              ...code...
- *          ;
- * 
- * 6) For loops must end with ":" else same as for-in loop's in python ( identation not neccesary but new line is neccesary )
- *       ex: 
- *            for [i] in (10)
- *                 {print(i)}
- *            :
- * 
- *  7) if statement's same as python but they end with "?" ( identation not neccesary but new line is neccesary )
- *      ex: 
- *          if 8 + 2 is 10
- *              {print("YES")}
- *          ?
- * 
- *  8) Conditional's are defined inside double parenthesis -> ex: [ condition = ((1>0)) ]
- */
-
 class BuiltInFunctions_RadhaProgrammingLanguage{
     constructor(){
         this.builtInFunctions = ["print","capitalize","casefold","type",]
@@ -569,17 +539,3 @@ let LANGUAGE_START1 = new RadhaProgrammingLanguage(`
     {print(fn)}
 
 `)
-
-//---------------------------OUTPUT---------------------------//
-// num = 15
-// str = krishna
-// cap_str = KRISHNA
-// true
-// list = 1 2 3 4
-// {num: 23, age: 19}
-// 19
-// 3
-// Hello World krishna
-// 37
-// FizzBuzz
-//----------------------------END-----------------------------//
