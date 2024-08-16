@@ -30,7 +30,7 @@ class BuiltInFunctions_RadhaProgrammingLanguage{
 
 }
 
-class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingLanguage{
+export class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingLanguage{
 
     constructor(code){
         super();
@@ -495,47 +495,3 @@ class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingLanguage
     }
 
 }
-
-let LANGUAGE_START1 = new RadhaProgrammingLanguage(`
-    
-    [num = 90 ]                         # integer
-    [str = "krishna" ]                  # string
-    [cap_str = {capitalize(str)} ]      # function
-    [con = ((1>0)) ]                    # conditional / boolean -> True
-    [list = [[1,2,3,4]] ]               # list
-    [dict = {{"num":23,"age":19}} ]     # dictionary
-    [age = dict[age] ]                  # dictionary property / item
-    [arr_ele = list[2] ]                # list item
-
-
-    def FizzBuzz(num)                   
-        if num % 3 is 0 and num % 5 is 0
-            [ans = "FizzBuzz"]
-        ?
-        if num % 3 is 0 and num % 5 != 0
-            [ans = "Fizz"]
-        ?
-        if num % 3 != 0 and num % 5 is 0
-            [ans = "Buzz"]
-        ?
-        if num % 3 != 0 and num % 5 != 0
-            [ans = "NoFizzNoBuzz"]
-        ?
-        ret: ans: # ("ret:" mean's "return")
-    ;
-
-    [fn = {FizzBuzz(15)} ]              # function
-
-    {print("num","=",num)}
-    {print("str","=",str)}
-    {print("cap_str","=",cap_str)}
-    {print(con)}
-    {print("list","=",list)}
-    {print(dict)}
-    {print(age)}
-    {print(arr_ele)}
-    {print("Hello","World",str)}
-    {print(num+age+arr_ele)}
-    {print(fn)}
-
-`)
