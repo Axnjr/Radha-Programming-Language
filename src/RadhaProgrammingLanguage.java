@@ -8,22 +8,13 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.util.Optional;
 
-class FunctionObject 
-{
-    public List<String> params;
+class FunctionObject {
+    public String[] params;
     public String body;
 
-    public FunctionObject(List<String> params, String body) {
+    public FunctionObject(String[] params, String body) {
         this.params = params;
         this.body = body;
-    }
-
-    public String getCode() {
-        return this.body;
-    }
-
-    public List<String> getParamList() {
-        return this.params;
     }
 }
 
@@ -33,11 +24,11 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
     private final String LETTERS = "^[a-zA-Z]*$";
     // private final String NUMBERS = "[0-9]";
     private final List<String> KEYWORDS = Arrays.asList(
-        "for", "in", "if", "is", "else", "def", "and", "or", "brk:",
-        "con:", "ret:", "True", "False", "None", "not"
-    );
+            "for", "in", "if", "is", "else", "def", "and", "or", "brk:",
+            "con:", "ret:", "True", "False", "None", "not");
     private Map<String, Object> VARIABLES; // hash map to store variables.
     private Map<String, FunctionObject> FUNCTIONS; // hash map to store user defined functions.
+
     private Stack<String> CURRENTLY_RUNNING_FUNCTION_STACK; // stack to hold currently executing function.
 
     private ScriptEngine engine;
@@ -53,16 +44,12 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
         ScriptEngineManager manager = new ScriptEngineManager();
         engine = manager.getEngineByName("JavaScript");
 
-        this.print(code);
-
         String[] tempCode = code.split("\\n\\s+");
 
         for (int i = 0; i < tempCode.length; i++) {
-            // this.print(tempCode[i]);
             Boolean t = this.isValid(tempCode[i]);
-            this.print("ANS:  "+String.valueOf(t));
             if (!t) {
-                throw new RuntimeException(
+                throw new RadhaError(
                     "[RADHA ERROR]: Parenthesis don't match at line " + i +
                     " you might have forgotten a closing or opening bracket !!"
                 );
@@ -73,86 +60,95 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
         this.MainProgramThread(0, this.CODE);
     }
 
-    private boolean isValid(String s) {
+    public boolean isValid(String s) 
+    {
         Stack<Character> stack = new Stack<>();
-        for (char l : s.toCharArray()) {
-            if (l == '(' || l == '{' || l == '[') {
-                stack.push(l);  // Push the opening brackets onto the stack
-            } else if (l == ')' && !stack.isEmpty() && stack.peek() == '(') {
-                stack.pop();    // Pop if a matching opening bracket is found
-            } else if (l == '}' && !stack.isEmpty() && stack.peek() == '{') {
-                stack.pop();
-            } else if (l == ']' && !stack.isEmpty() && stack.peek() == '[') {
-                stack.pop();
-            } else {
-                return false;   // If no matching opening bracket, it's invalid
+        Map<Character, Character> mapping = new HashMap<>();
+
+        mapping.put(')', '(');
+        mapping.put('}', '{');
+        mapping.put(']', '[');
+
+        for (char c : s.toCharArray()) {
+            if (mapping.containsValue(c)) {
+                stack.push(c);
+            } else if (mapping.containsKey(c)) {
+                if (stack.isEmpty() || mapping.get(c) != stack.pop()) {
+                    return false;
+                }
             }
         }
-        this.print(stack.empty() ? "YES" : "NO");
-        return stack.isEmpty(); // Valid if stack is empty
+        
+        return stack.isEmpty();
     }
 
     private boolean CheckIfString(String str) {
         int l = str.length() - 1;
-        return (str.charAt(0) == '"' || str.charAt(0) == '\'') && (str.charAt(l) == '"' || str.charAt(l) == '\'');
+        return 
+            (str.charAt(0) == '"' || str.charAt(0) == '\'') 
+                                  && 
+            (str.charAt(l) == '"' || str.charAt(l) == '\'');
     }
 
     private Object[] LoopTillGivenCharacter(
-        int pointer, 
-        char tillCharacter, 
-        Optional<String> optionalScript, 
-        Optional<String> optionalErrorMessage, 
-        Optional<Boolean> optionalCondition
-    ) throws Exception 
-    {
-        StringBuilder returnValue = new StringBuilder();
+            int pointer,
+            char tillCharacter,
+            Optional<String> optionalScript,
+            Optional<String> optionalErrorMessage,
+            Optional<Boolean> optionalCondition
+    ) throws Exception {
 
+        StringBuilder returnValue = new StringBuilder();
+        // optional condition specifies wheather "till" character should also be
+        // included in the return result string .
         Boolean cond = optionalCondition.orElse(false);
         // If optionalScript is not provided, use the entire code
         String script = optionalScript.orElse(this.CODE);
         String error = optionalErrorMessage.orElse(null);
-    
+
         // Loop through the script until the specified character is found
         while (true) 
         {
             if (pointer >= script.length()) {
                 break;
             }
-    
+
             if (script.charAt(pointer) == tillCharacter) {
                 if (cond) {
                     returnValue.append(script.charAt(pointer));
                 }
                 break;
             }
-    
+
             if (pointer > this.CODE.length()) {
                 if (error == null) {
                     break;
-                } 
-                else {
+                } else {
                     throw new Exception(error);
                 }
             }
-    
+
             returnValue.append(script.charAt(pointer));
             pointer++;
         }
-    
-        return new Object[]{pointer, returnValue.toString()};
+
+        // print(pointer+returnValue.toString()+"\n\n\n"+script.charAt(pointer));
+
+        return new Object[] { pointer, returnValue.toString() };
     }
 
-    private void MainProgramThread(int index, String script) throws Exception {
-
+    private void MainProgramThread(int index, String script) throws Exception 
+    {
         String c = script != null ? script : this.CODE;
+        int scriptSize = c.length();
 
-        for (int pointer = index; pointer < c.length(); pointer++) {
-
+        for (int pointer = index; pointer < c.length(); pointer++) 
+        {
             if (Character.isWhitespace(c.charAt(pointer))) {
                 pointer++; // skipping white spaces
             }
 
-            if (c.charAt(pointer) == '#') { // it's a comment
+            if (pointer < scriptSize && c.charAt(pointer) == '#') { // it's a comment
                 while (pointer < c.length()) {
                     if (c.charAt(pointer) == '\n') {
                         break;
@@ -161,8 +157,9 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
                 }
             }
 
-            if (c.charAt(pointer) == '[') // assignment of variables
-            { 
+            // assignment of variables
+            if (pointer < scriptSize && c.charAt(pointer) == '[') 
+            {
                 if (c.charAt(pointer + 1) == ']') {
                     break; // in case of empty declaration [] like this we must break else loop
                 }
@@ -171,7 +168,8 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
                 StringBuilder varName = new StringBuilder();
                 StringBuilder varValue = new StringBuilder();
 
-                while (true) { // for variable name
+                // for variable name
+                while (true) { 
                     if (c.charAt(pointer) == '=') {
                         break;
                     }
@@ -180,27 +178,28 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
                 }
 
                 // variable name cannot be the same as the name of keywords.
-                if (KEYWORDS.contains(varName.toString())) 
-                { 
-                    throw new RuntimeException(
-                        "Syntax Error: invalid syntax" + 
-                        varName + 
+                if (KEYWORDS.contains(varName.toString())) {
+                    throw new RadhaError(
+                        "Syntax Error: invalid syntax" +
+                        varName +
                         " is a reserved keyword it cannot be used !!"
                     );
                 }
 
                 pointer++; // move ahead
 
-                if (c.substring(pointer, pointer + 2).equals("[[")) // array is declared
-                { 
+                // array is declared
+                if (pointer < scriptSize && c.substring(pointer, pointer + 2).equals("[[")) {
                     pointer++;
                     varValue.append(ArrayDeclaration(pointer, c));
                     VARIABLES.put(varName.toString(), varValue.toString());
-                } 
+                }
 
-                else if (c.substring(pointer, pointer + 2).equals("{{")) // dictionary / object is declared.
-                { 
+                // dictionary / object is declared.
+                else if (pointer < scriptSize && c.substring(pointer, pointer + 2).equals("{{")) 
+                {
                     pointer++;
+
                     while (true) {
                         varValue.append(c.charAt(pointer));
                         if (c.charAt(pointer) == '}') {
@@ -209,16 +208,19 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
                         pointer++;
                     }
 
-                    // ------------------------- JSON PARSE TO BE IMPLEMETED ------------------------------ //
+                    // print("DICTIONARY :::::: "+varValue.toString());
+                    List<Object> objList = new ArrayList<>();
 
-                    // VARIABLES.put(varName.toString(), parseToMap(varValue.toString()));
+                    for (String i : varValue.toString().replaceAll("[{}]", "").split(",")) {
+                        String[] temp = i.split(":");
+                        objList.add(new Object[] { temp[0], temp[1] });
+                    }
 
-                    // ------------------------- JSON PARSE TO BE IMPLEMETED ------------------------------ //
+                    VARIABLES.put(varName.toString(), objList);
+                }
 
-                } 
-
-                else // integer or string is declared
-                { 
+                // integer or string is declared
+                else {
                     while (true) {
                         if (c.charAt(pointer) == ']') {
                             break;
@@ -227,16 +229,11 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
                         pointer++;
                     }
 
-                    if (VARIABLES.containsKey(varValue.charAt(0)) && varValue.charAt(1) == '[') {
-                        // varValue = new StringBuilder(ReturnPropertyOfObject(varValue.toString()));
-                    }
-
-                    if (builtInFunctions.contains(varValue.toString().split("\\(")[0].replaceAll("[{}]", ""))) 
-                    {
+                    if (builtInFunctions.contains(varValue.toString().split("\\(")[0].replaceAll("[{}]", ""))) {
                         String fn = varValue.toString().split("\\(")[0].replaceAll("[{}]", "");
                         String pr = varValue.toString().split("\\(")[1].replaceAll("[{}]", "");
                         varValue = new StringBuilder(ExecuteFunction(fn, pr));
-                    } 
+                    }
 
                     else {
                         varValue = new StringBuilder(ProcessData(varValue.toString()));
@@ -244,46 +241,44 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
 
                     VARIABLES.put(varName.toString(), varValue.toString());
                 }
-
             }
 
-            if (c.charAt(pointer) == '{') {
+            if (pointer < scriptSize && c.charAt(pointer) == '{') {
+                // print(c);
                 HandleDefinedFunctions(pointer + 1, c);
                 break;
             }
 
-            if (c.substring(pointer, pointer + 3).equals("for")) {
-                ForLoopInterpreter(pointer + 3, c);
+            if (pointer + 2 <= scriptSize && c.substring(pointer, pointer + 2).equals("for")) {
+                ForLoopInterpreter(pointer + 2, c);
                 break;
             }
 
-            String k = c.substring(pointer, pointer + 4);
-
-            if (k.equals("ret:"))  // return statement.
-            { 
+            if (pointer + 4 <= c.length() && c.substring(pointer, pointer + 4).equals("ret:")) // return statement.
+            {
                 if (!CURRENTLY_RUNNING_FUNCTION_STACK.isEmpty()) 
                 {
                     String fnName = CURRENTLY_RUNNING_FUNCTION_STACK.peek();
                     Object[] temp = LoopTillGivenCharacter(
-                        pointer+4,
-                        ':', 
-                        Optional.of(c),
-                        Optional.empty(),
-                        Optional.empty()
+                            pointer + 4,
+                            '\n',
+                            Optional.of(c),
+                            Optional.empty(),
+                            Optional.empty()
                     );
-
                     String ret_val = ProcessData((String) temp[1]);
+
                     VARIABLES.put(fnName, ret_val);
                     CURRENTLY_RUNNING_FUNCTION_STACK.pop();
                 }
             }
 
-            if (c.substring(pointer, pointer + 2).equals("if")) {
+            if (pointer + 2 <= c.length() && c.substring(pointer, pointer + 2).equals("if")) {
                 IfInterpreter(pointer + 2, c);
                 break;
             }
 
-            if (c.substring(pointer, pointer + 3).equals("def")) {
+            if (pointer + 3 <= c.length() && c.substring(pointer, pointer + 3).equals("def")) {
                 RegisterUserDefinedFunctions(pointer + 3);
                 break;
             }
@@ -293,6 +288,7 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
     private String ArrayDeclaration(int pointer, String c) {
         StringBuilder varValue = new StringBuilder();
         pointer++;
+
         while (!c.substring(pointer, pointer + 2).equals("]]")) {
             varValue.append(c.charAt(pointer));
             if (pointer > this.CODE.length()) {
@@ -303,65 +299,65 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
         return "[" + varValue.toString() + "]";
     }
 
-    private String ReturnElementAtIndexOfArray(String varValue) {
+    @SuppressWarnings({ "unchecked" })
+    private String ReturnElementAtIndexOfArray(String varValue) throws Exception 
+    {
         String[] parts = varValue.split("\\[");
-        if (VARIABLES.containsKey(parts[0])) {
-            List<Object> temp = (List<Object>) VARIABLES.get(parts[0]); // array whose element is required
-            int index = Integer.parseInt(parts[1].replace("]", "")); // index of element to be searched
-            if (!(temp instanceof List)) {
-                throw new RuntimeException("TypeError: \"" + type(temp.toString()) + "\" object is not subscriptable.");
+        String result = "";
+        // print("ARRAY ELE: "+parts[0]+" / "+parts[1]);
+
+        if (VARIABLES.containsKey(parts[0])) 
+        {
+            Object temp = VARIABLES.get(parts[0]); // array or object whose element is required
+            String ref = parts[1].replace("]", "");
+
+            if (temp instanceof String) {
+                int index = Integer.parseInt(ref); // index of element to be searched
+                result = String.valueOf(temp.toString().split(",")[index]);
+            } 
+            
+            else if (temp instanceof List) {
+                result = ((List<Object[]>) temp)
+                    .stream()
+                    .filter(obj -> ref.equals(obj[0]))
+                    .findFirst()
+                    .map(obj -> obj[1].toString()) // Convert the value to a string
+                    .orElse(null)
+                ;
             }
-            if (index >= temp.size()) {
-                throw new RuntimeException("IndexError: list index out of range");
-            }
-            return temp.get(index).toString();
+        } 
+        else {
+            throw new RadhaError("Variable " + parts[0] + " is not defined !");
         }
-        return null;
+
+        return result;
     }
 
-    private String ReturnPropertyOfObject(String varValue) {
-        String[] parts = varValue.split("[");
-        if (VARIABLES.containsKey(parts[0])) {
-            Map<String, Object> temp = (Map<String, Object>) VARIABLES.get(parts[0]); // dictionary/object
-            String key = parts[1].replace("]", "");
-            if (!(temp instanceof Map)) {
-                throw new RuntimeException("TypeError: \"" + type(temp.toString()) + "\" object is not subscriptable.");
-            }
-            if (!temp.containsKey(key)) {
-                throw new RuntimeException("KeyError: '" + key + "'");
-            }
-            return temp.get(key).toString();
-        }
-        return null;
-    }
-
-    private void HandleDefinedFunctions(int pointer, String script) throws Exception {
-
+    private void HandleDefinedFunctions(int pointer, String script) throws Exception 
+    {
         String c = script;
-
         Object[] temp;
 
         temp = LoopTillGivenCharacter(
-            pointer,
-            '(', 
-            Optional.of(script), 
-            Optional.empty(), 
-            Optional.empty()
-        );
+                pointer,
+                '(',
+                Optional.of(script),
+                Optional.empty(),
+                Optional.empty());
 
         String fnName = (String) temp[1];
         pointer = (int) temp[0] + 1;
 
         temp = LoopTillGivenCharacter(
-            pointer,
-            ')', 
-            Optional.of(script), 
-            Optional.empty(), 
-            Optional.empty()
+                pointer,
+                ')',
+                Optional.of(script),
+                Optional.empty(),
+                Optional.empty()
         );
 
         String paramValues = (String) temp[1];
-        pointer = (int) temp[0] + 1;
+        pointer = (int) temp[0];
 
         // Check if function is a built-in function and execute it
         if (builtInFunctions.contains(fnName)) {
@@ -374,25 +370,26 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
         }
 
         // If function is user-defined, execute the corresponding script
-        if (userDefinedFunctions.contains(fnName)) {
-            String functionScript = FUNCTIONS.get(fnName).getCode();
-            List<String> params = FUNCTIONS.get(fnName).getParamList();
+        if (userDefinedFunctions.contains(fnName)) 
+        {
+            String functionScript = this.FUNCTIONS.get(fnName).body;
+            String[] params = this.FUNCTIONS.get(fnName).params;
             String[] paramValuesArray = paramValues.split(",");
 
             // Check if the number of arguments matches the number of parameters
-            if (paramValuesArray.length != params.size()) {
-                throw new Exception(
-                    "\""                      + 
-                    fnName                    + 
-                    "\" takes "               + 
-                    params.size()             + 
-                    " arguments but got "     + 
+            if (paramValuesArray.length != params.length) {
+                throw new RadhaError(
+                    "\"" +
+                    fnName +
+                    "\" takes " +
+                    params.length +
+                    " arguments but got " +
                     paramValuesArray.length
                 );
             }
 
-            for (int i = 0; i < params.size(); i++) {
-                VARIABLES.put(params.get(i), paramValuesArray[i]);
+            for (int i = 0; i < params.length; i++) {
+                VARIABLES.put(params[i], paramValuesArray[i]);
             }
 
             // Add the function to the currently running function stack
@@ -404,7 +401,6 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
 
         // Continue the main program thread execution
         MainProgramThread(pointer, c);
-
     }
 
     private void ForLoopInterpreter(int pointer, String c) throws Exception 
@@ -424,11 +420,11 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
         }
 
         Object[] temp = this.LoopTillGivenCharacter(
-            pointer, 
-            ':', 
-            Optional.of(c), 
-            Optional.of("Syntax Error : Loop end \":\" not found ."), 
-            Optional.empty()
+                pointer,
+                ':',
+                Optional.of(c),
+                Optional.of("Syntax Error : Loop end \":\" not found ."),
+                Optional.empty()
         );
 
         loop_script = (String) temp[1];
@@ -438,19 +434,24 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
         String loopCond = loopParts[1];
 
         // Handle variable having an array
-        if (loopCond.contains("[") && LETTERS.matches(loopCond)) {
+        if (loopCond.contains("[") && LETTERS.matches(loopCond)) 
+        {
             String tempVar = loopCond.replaceAll("[\\[\\]|]", "");
+
             if (!VARIABLES.containsKey(tempVar)) {
                 throw new Exception("NameError: name \"" + tempVar + "\" is not defined.");
             }
+
             VARIABLES.put(loopVar, "0");
             ExecuteDirectForLoop(loopVar, VARIABLES.get(tempVar).toString(), loop_script);
         }
 
         // Handle array directly given
-        else if (loopCond.contains("[[")) {
+        else if (loopCond.contains("[[")) 
+        {
             VARIABLES.put(loopVar, "0");
             String loopArray = ArrayDeclaration(loopCond.charAt(2), loopCond);
+
             ExecuteDirectForLoop(loopVar, loopArray, loop_script);
         }
 
@@ -465,11 +466,12 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
             }
 
             VARIABLES.put(loopVar, loopRange[0]);
+
             ExecuteRangeForLoop(
-                Integer.parseInt(loopRange[0]), 
-                Integer.parseInt(loopRange[1]), 
-                Integer.parseInt(loopRange[1]), 
-                loopVar, 
+                Integer.parseInt(loopRange[0]),
+                Integer.parseInt(loopRange[1]),
+                Integer.parseInt(loopRange[1]),
+                loopVar,
                 loop_script
             );
         }
@@ -478,101 +480,161 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
     }
 
     private void ExecuteDirectForLoop(String loopVar, String arr, String loop_script) throws Exception {
-        for(int i = 0; i < arr.length(); i++){ 
+        for (int i = 0; i < arr.length(); i++) {
             this.VARIABLES.put(loopVar, i);
-            this.MainProgramThread(0,loop_script);
-        }
-    }
-
-    private void ExecuteRangeForLoop(int start, int end, int inc, String varValue, String loop_script) throws Exception{
-        // if( end == null ){ end = start ; start = 0 } 
-        // (10) in such range start must be 0 and end will be 10 therfore ..
-        // if(inc == null){ inc = 1 } 
-        // incrementing factor is also optional parameter .
-        for(int i = start; i < end; i = i + inc){
-            this.VARIABLES.put(varValue, i+1); 
             this.MainProgramThread(0, loop_script);
         }
     }
 
-    private void IfInterpreter(int pointer, String c) throws Exception {
+    private void ExecuteRangeForLoop(
+        int start, int end, int inc, String varValue, String loop_script) throws Exception {
+        // if( end == null ){ end = start ; start = 0 }
+        // (10) in such range start must be 0 and end will be 10 therfore ..
+        // if(inc == null){ inc = 1 }
+        // incrementing factor is also optional parameter .
+        for (int i = start; i < end; i = i + inc) {
+            this.VARIABLES.put(varValue, i + 1);
+            this.MainProgramThread(0, loop_script);
+        }
+    }
+
+    private void IfInterpreter(int pointer, String c) throws Exception 
+    {
         String if_script, word = "", ans;
         List<String> t = new ArrayList<>();
         Object[] temp;
-        
-        temp = this.LoopTillGivenCharacter(
-            pointer,
-            '\n',
-            Optional.of(c),
-            Optional.empty(),
-            Optional.empty()
-        ); // temprary variable
-       
-        String CONDITION = (String) temp[1];
-        pointer = (int) temp[0]; 
 
-        for (int i = 0; i < CONDITION.length(); i++) {
+        // temprary variable
+        temp = this.LoopTillGivenCharacter(
+                pointer,
+                '\n',
+                Optional.of(c),
+                Optional.empty(),
+                Optional.empty()
+        ); 
+
+        String CONDITION = (String) temp[1];
+        pointer = (int) temp[0];
+
+        CONDITION = CONDITION
+            .replaceAll("or", "||")
+            .replaceAll("and", "&&")
+            .replaceAll("is", "===")
+            .replaceAll("True", "true")
+            .replaceAll("False", "false")
+        ;
+
+        for (int i = 0; i < CONDITION.length(); i++) 
+        {
             String currentChar = String.valueOf(CONDITION.charAt(i));
-            
-            if (this.LETTERS.matches(currentChar)) {
+
+            if (currentChar.matches(this.LETTERS)) {
                 word += currentChar; // Append the matching character to the word
             } 
             else {
-                t.add(word);         // Push the accumulated word to the stack (or list)
-                t.add(currentChar);  // Push the current non-matching character to the stack (or list)
-                word = "";           // Reset the word for the next accumulation
+                t.add(word); // Push the accumulated word to the stack (or list)
+                t.add(currentChar); // Push the current non-matching character to the stack (or list)
+                word = ""; // Reset the word for the next accumulation
             }
             if (i == CONDITION.length() - 1) {
-                t.add(word);         // Ensure the last accumulated word is pushed to the stack (or list)
+                t.add(word); // Ensure the last accumulated word is pushed to the stack (or list)
             }
         }
 
-        List<String> CONDITION_ARR = new ArrayList<>();
+        String[] CONDITION_ARR = new String[t.size()];
 
-        for (String str : t) {
-            if (str.matches(".*\\S.*")) { // Equivalent to /\S/.test(str) in JS
-                CONDITION_ARR.add(str);
+        for (int i = 0; i < t.size(); i++) {
+            // look for variables and replace them with thier values
+            if (t.get(i).matches(".*\\S.*") && t.get(i).matches(this.LETTERS)) {
+                // print(t.get(i));
+                CONDITION_ARR[i] = this.ProcessData(t.get(i));
+            } else {
+                CONDITION_ARR[i] = t.get(i);
             }
-        }
-
-        for(String i : CONDITION_ARR){
-            if(this.LETTERS.matches(i)){
-                i = this.ProcessData(i);
-            } 
         }
 
         ans = engine.eval(String.join("", CONDITION_ARR)).toString();
 
         temp = this.LoopTillGivenCharacter(
-            pointer, 
-            '?', 
-            Optional.of(c), 
+            pointer,
+            '?',
+            Optional.of(c),
             Optional.of("Syntax Error : if statement never ended missing '?' . "),
             Optional.of(true)
         );
 
-        pointer = ((int) temp[0]) + 2 ; 
-        if_script = (String) temp[1]  ;
+        pointer = ((int) temp[0]) + 2;
+        if_script = (String) temp[1];
 
-        if(Boolean.valueOf(ans)){ 
+        if (Boolean.valueOf(ans)) {
             this.MainProgramThread(0, if_script);
         }
+
         this.MainProgramThread(pointer, c);
     }
 
-    private void RegisterUserDefinedFunctions(int pointer) {
-        // Add logic to register user-defined functions
+    private void RegisterUserDefinedFunctions(int pointer) throws Exception 
+    {
+        String c = this.CODE, fnName = "", params = "", fn_code = "";
+        Object[] temp;
+
+        // temp[0] has the modified pointer and temp[1] has the value after looping .
+        // looping to get fnName (function name)
+        temp = this.LoopTillGivenCharacter(
+            pointer,
+            '(',
+            Optional.of(c),
+            Optional.empty(),
+            Optional.empty()
+        );
+
+        fnName = (String) temp[1];
+        // update pointer by moving ahead
+        pointer = (int) temp[0] + 1;
+        // print("REGISTERING FUNC: "+fnName);
+
+        // looping to get params (function paramaters)
+        temp = this.LoopTillGivenCharacter(
+            pointer,
+            ')',
+            Optional.of(c),
+            Optional.empty(),
+            Optional.empty()
+        );
+
+        params = (String) temp[1];
+        // update pointer by moving ahead
+        pointer = (int) temp[0] + 1;
+
+        // looping to get fnCode (function code/script)
+        temp = this.LoopTillGivenCharacter(
+            pointer,
+            ';',
+            Optional.of(c),
+            Optional.of("Syntax Error : Function never ended ';' not found ."),
+            Optional.empty()
+        );
+
+        // adding a semi colon bcuz else it would give error in case of user defined function .
+        fn_code = (String) temp[1] + ":";
+        // update pointer by moving ahead
+        pointer = (int) temp[0] + 1;
+
+        FunctionObject funcObj = new FunctionObject(params.split(","), fn_code);
+
+        this.userDefinedFunctions.add(fnName);
+        this.FUNCTIONS.put(fnName, funcObj);
+        this.MainProgramThread(pointer + 1, c);
     }
 
-    private String ProcessData(String varValue) throws Exception {
-
+    private String ProcessData(String varValue) throws Exception 
+    {
         // If variable is assigned another variable
         if (VARIABLES.containsKey(varValue)) {
             varValue = (String) VARIABLES.get(varValue);
-
         } 
+
         else if (varValue.startsWith("{")) {
-            
             HandleDefinedFunctions(1, varValue);
 
             if (isValid(varValue)) {
@@ -602,16 +664,16 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
             varValue = HandleMod(varValue); // Handle modulo
         } 
         else if (varValue.contains("[")) {
-            // varValue = ReturnElementAtIndexOfArray(varValue); // Handle array indexing
+            varValue = ReturnElementAtIndexOfArray(varValue); // Handle array indexing
         } 
         else if (!CheckIfString(varValue) && !isNumeric(varValue) && !KEYWORDS.contains(varValue)) {
-            throw new RuntimeException("NameError : name \"" + varValue + "\" is not defined.");
+            throw new RadhaError("Name \"" + varValue + "\" is not defined.");
         }
 
-        return varValue;
+        return varValue == null ? "" : varValue;
     }
 
-    private Boolean isNumeric(String d){
+    private Boolean isNumeric(String d) {
         try {
             Integer.parseInt(d);
             return true;
@@ -620,133 +682,152 @@ public class RadhaProgrammingLanguage extends BuiltInFunctions_RadhaProgrammingL
         }
     }
 
-    private String HandleAddition(String d) throws Exception{ 
-        String[] data = d.split("+");
-        int int_sum = 0;
+    private String HandleAddition(String d) throws Exception 
+    {
+        String[] data = d.split("\\+");
         String str_sum = "";
+        int int_sum = 0;
 
-        for(String ch: data){ ch = this.ProcessData(ch); }
-        for(int i = 0 ; i < data.length ; i++ ){
-            // for adding strings 
-            if(this.CheckIfString(data[i])){ 
-                str_sum += data[i].replace("\"", "").replace("'", "");
-            } 
-
-            if(!this.CheckIfString(data[i])){  int_sum += Integer.parseInt(data[i]); } // for adding numbers
+        for (int i = 0; i < data.length; i++) {
+            data[i] = ProcessData(data[i]);
         }
 
-        if(int_sum==0){ return str_sum; } // two strings were passed . BUG FOUND <--
-        if(str_sum==""){ return int_sum+""; } // two integers were passed
-        else{  throw new RuntimeException("TypeError: can only concatenate str (not 'int') to str"); } // one string and one integer were passed which cannot be added in python.
+        for (int i = 0; i < data.length; i++) {
+            // for adding strings
+            if (this.CheckIfString(data[i])) {
+                str_sum += data[i].replace("\"", "").replace("'", "");
+            }
+
+            if (!this.CheckIfString(data[i])) {
+                int_sum += Integer.parseInt(data[i]);
+            } // for adding numbers
+        }
+
+        // two strings were passed . BUG FOUND <--
+        if (int_sum == 0) {
+            return str_sum;
+        } 
+        // two integers were passed
+        if (str_sum == "") {
+            return int_sum + "";
+        } 
+        // one string and one integer were passed which cannot be added in python.
+        else {
+            throw new RadhaError("TypeError: can only concatenate str (not 'int') to str");
+        } 
     }
 
-    private String HandleSubtraction(String d) throws Exception{
-        String[] data = d.split("-");
+    private String HandleSubtraction(String d) throws Exception 
+    {
+        String[] data = d.split("\\-");
 
         // if it is a program string (quotes prresent) then it can't be subtracted .
-        if( this.CheckIfString(data[0]) ){ 
+        if (this.CheckIfString(data[0])) {
             throw new RuntimeException(
-                "TypeError: unsupported operand type(s) for -:" +
-                this.type(data[0]) + 
-                " and " +
-                this.type(data[1])
-            ); 
+                    "TypeError: unsupported operand type(s) for -:" +
+                            this.type(data[0]) +
+                            " and " +
+                            this.type(data[1]));
         }
 
-        data[0] = this.ProcessData(data[0]) ; int ans = Integer.parseInt(data[0]);
+        data[0] = this.ProcessData(data[0]);
+        int ans = Integer.parseInt(data[0]);
 
-        for(int i = 1 ; i < data.length ; i++){
-            if( this.CheckIfString(data[i]) ){  // strings can't be subtracted .
-                throw new RuntimeException(
+        for (int i = 1; i < data.length; i++) 
+        {
+            if (this.CheckIfString(data[i])) { // strings can't be subtracted .
+                throw new RadhaError(
                     "TypeError: unsupported operand type(s) for -:" +
-                    this.type(data[i]) + 
+                    this.type(data[i]) +
                     " and " +
                     this.type(data[i + 1])
-                ); 
+                );
             }
+
             data[i] = this.ProcessData(data[i]);
             ans -= Integer.parseInt(data[i]);
         }
-        return ans+"";
+
+        return ans + "";
     }
 
-    private String HandleMultiplication(String d) throws Exception{
-        String[] data = d.split("*");
+    private String HandleMultiplication(String d) throws Exception 
+    {
+        String[] data = d.split("\\*");
         int ans = 1;
 
-        for(int i = 0 ; i < data.length ; i++)
+        for (int i = 0; i < data.length; i++) 
         {
-            if( this.CheckIfString(data[i]) ){  // strings can't be multiplied .
-                throw new RuntimeException(
-                    "TypeError: can't multiply sequence by non-int of type" + 
+            if (this.CheckIfString(data[i])) { // strings can't be multiplied .
+                throw new RadhaError(
+                    "TypeError: can't multiply sequence by non-int of type" +
                     this.type(data[i])
-                ); 
+                );
             }
 
             data[i] = this.ProcessData(data[i]);
             ans = ans * Integer.parseInt(data[i]);
         }
 
-        return ans+"";
+        return ans + "";
     }
 
-    private String HandleDivision(String d) throws Exception{
+    private String HandleDivision(String d) throws Exception 
+    {
         String[] data = d.split("/");
 
-        if( this.CheckIfString(data[0]) || this.CheckIfString(data[1]) ){  // strings can't be divided
+        if (this.CheckIfString(data[0]) || this.CheckIfString(data[1])) { // strings can't be divided
             throw new RuntimeException(
-                "TypeError: can't divide sequence by non-int of type" + 
-                this.type(data[0])
-            ); 
+                    "TypeError: can't divide sequence by non-int of type" +
+                            this.type(data[0]));
         }
 
         data[0] = this.ProcessData(data[0]);
         data[1] = this.ProcessData(data[1]);
+
         return engine.eval(data[0] + "/" + data[1]).toString();
     }
 
-    private String HandleMod(String d) throws Exception{
+    private String HandleMod(String d) throws Exception 
+    {
         String[] data = d.split("+");
 
-        if( this.CheckIfString(data[0]) || this.CheckIfString(data[1]) ){  // strings can't be divided
-            throw new RuntimeException(
-                "TypeError: can't mod sequence by non-int of type" + 
-                this.type(data[0])
-            ); 
+        if (this.CheckIfString(data[0]) || this.CheckIfString(data[1])) { // strings can't be divided
+            throw new RadhaError(
+                "TypeError: can't mod sequence by non-int of type" +
+                this.type(data[0]));
         }
 
         data[0] = this.ProcessData(data[0]);
         data[1] = this.ProcessData(data[1]);
+
         return engine.eval(data[0] + "%" + data[1]).toString();
     }
 
-    private Map<String, Object> parseToMap(String data) {
-        // Logic to convert a string into a Map
-        return new HashMap<>();
-    }
-
-    private String ExecuteFunction(String functionName, String params) throws Exception {
+    private String ExecuteFunction(String functionName, String params) throws Exception 
+    {
         params = params.replace(")", "");
         String[] temp = params.split(",");
         String ans;
 
-        if(temp.length>1){
-            for(int i = 0; i < temp.length; i++){  
-                temp[i] = this.ProcessData(temp[i]);  
+        if (temp.length > 1) {
+            for (int i = 0; i < temp.length; i++) {
+                temp[i] = this.ProcessData(temp[i]);
             }
-            params = temp+"" ;
-        }
-        else{  
-            params = this.ProcessData(params); 
+            params = String.join("", temp);
+        } 
+        else {
+            params = this.ProcessData(params);
         }
 
-        for(int i = 0; i < this.builtInFunctions.size() ; i++){
-            if(this.builtInFunctions.get(i) == functionName){ 
-                ans = this.FunctionCaller(i, params);
+        for (int i = 0; i < this.builtInFunctions.size(); i++) {
+            if (this.builtInFunctions.contains(functionName)) {
+                ans = this.FunctionCaller(functionName, params);
                 return ans;
             }
         }
 
         return null;
     }
+    
 }
