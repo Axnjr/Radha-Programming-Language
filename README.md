@@ -129,7 +129,7 @@ A basic programming language that includes features of both Python and JavaScrip
 ```
 
 3) From js file
-```
+```js
 import { RadhaProgrammingLanguage } from "./Language"
 
 let LANGUAGE_START1 = new RadhaProgrammingLanguage(`
