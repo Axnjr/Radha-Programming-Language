@@ -40,16 +40,17 @@ public class BuiltInFunctions_RadhaProgrammingLanguage {
         }
     }
 
-    public String FunctionCaller(int index, String params) {
-        switch (index) {
-            case 0:
+    public String FunctionCaller(String fnName, String params) {
+        // print("FUNCTION CALLER: "+params);
+        switch (fnName) {
+            case "print":
                 print(params);
                 return "";
-            case 1:
+            case "capitalize":
                 return capitalize(params);
-            case 2:
+            case "casefold":
                 return casefold(params);
-            case 3:
+            case "type":
                 return type(params);
         }
         return "Function not defined !!";
