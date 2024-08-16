@@ -1,0 +1,32 @@
+[n = 90 ]                         # integer
+{print(n+99)}
+[str = "krishna" ]
+[cap_str = {capitalize(str)} ]
+{print(cap_str)}
+{print(str+"tyuiuyt")}
+
+[list = [[1,2,3,4]] ] 
+[dict = {{"num":23,"age":19}} ]
+# [arr_ele = list[2] ]
+{print("list","=",list)}
+{print(list[2])}
+{print(dict["age"])}
+
+def FizzBuzz(num)                   
+    if num % 3 is 0 and num % 5 is 0
+        [ans = "FizzBuzz"]
+    ?
+    if num % 3 is 0 and num % 5 != 0
+        [ans = "Fizz"]
+    ?
+    if num % 3 != 0 and num % 5 is 0
+        [ans = "Buzz"]
+    ?
+    if num % 3 != 0 and num % 5 != 0
+        [ans = "NoFizzNoBuzz"]
+    ?
+    ret: ans
+;
+
+[fn = {FizzBuzz(15)} ] 
+{print(fn)}
