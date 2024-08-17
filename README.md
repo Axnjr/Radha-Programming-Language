@@ -77,7 +77,7 @@ A basic programming language that includes features of both Python and JavaScrip
 
 1)
 ```ruby
-
+# main.radha
      [num = 90 ]                         # integer
      [str = "krishna" ]                  # string
      [cap_str = {capitalize(str)} ]      # function
@@ -102,7 +102,7 @@ A basic programming language that includes features of both Python and JavaScrip
 
 2) 
  ```ruby
-
+# main.radha
       def FizzBuzz(num)                   
         if num % 3 is 0 and num % 5 is 0
             [ans = "FizzBuzz"]
@@ -127,8 +127,12 @@ A basic programming language that includes features of both Python and JavaScrip
     {print( {FizzBuzz(19)}) }    # NoFizzNoBuzz
 
 ```
+3) Execute the `radha` file
+```bash
+.\radha <filename>.radha
+```
 
-3) From js file
+4) From js file
 ```js
 import { RadhaProgrammingLanguage } from "./Language"
 
