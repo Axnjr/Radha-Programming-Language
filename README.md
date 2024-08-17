@@ -72,7 +72,65 @@ A basic programming language that includes features of both Python and JavaScrip
       ```ruby
         [ condition = ((1>0)) ] 
       ```
-      
+
+# Installation Guide for Radha Programming Language
+
+Welcome to the Radha Programming Language! This guide will walk you through the steps required to install and set up the environment on your machine.
+
+## Prerequisites
+
+Before installing the Radha Programming Language, ensure that you have the following: You can either run the java version of radha-lang for that you should have below requirments, or you can use the below [JavaScript CDN](#cdn) 👇
+
+1. **Java Development Kit (JDK)**
+   - Version 8 or higher
+   - [Download JDK](https://www.oracle.com/java/technologies/javase-jdk8-downloads.html)
+   - Ensure Java is added to your `PATH` environment variable.
+
+2. **Git (Optional)**
+   - Used to clone the repository
+   - [Download Git](https://git-scm.com/downloads)
+
+3. **Text Editor or IDE**
+   - Any editor that supports Java, such as VS Code, IntelliJ IDEA, or Eclipse.
+
+## Step-by-Step Installation
+
+### 1. Clone the Repository
+
+First, clone the repository to your local machine:
+
+```bash
+git clone https://github.com/yourusername/Radha-Programming-Language.git
+```
+Alternatively, you can download the repository as a ZIP file and extract it to a directory of your choice.
+
+### 2. Compile the Source Code
+
+Navigate to the root directory of the project and compile the source code:
+```bash
+cd Radha-Programming-Language
+javac -d bin src/*.java
+```
+
+This command compiles all .java files in the src directory and places the compiled .class files in the bin directory.
+
+### 3. Set Up Execution Script
+
+Windows:
+- Replace `C:\path\to\your\project\bin` with the actual path to your bin directory in the `radha.bat` file.
+- Add the location of radha.bat to your PATH environment variable for easy execution from any directory.
+
+Linux / macOS:
+- Replace `/home/yourusername/Radha-Programming-Language/bin` with the actual path to your bin directory in the `radha.sh` file.
+- Make the script executable:
+```
+chmod +x radha.sh
+```
+- Optionally, add the directory containing radha.sh to your PATH environment variable:
+```
+export PATH=$PATH:/path/to/radha.sh/directory
+```
+
 # Example
 
 1)
@@ -181,6 +239,6 @@ let LANGUAGE_START1 = new RadhaProgrammingLanguage(`
 `)
 ```
 
-# CDN 
+<a name="cdn"># CDN </a>
  
  https://cdn.jsdelivr.net/gh/Axnjr/Radha-Programming-Language@main/Language.js
