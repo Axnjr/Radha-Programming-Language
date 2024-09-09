@@ -2,7 +2,7 @@
 
 A basic programming language that includes features of both Python and JavaScript created by Axnjr (Yakshit Chhipa) as a personal project to include in my resume .
 
-# Syntax / Quick Docs .
+# Syntax / Quick Docs
  
  1) Variable declartion and assignment inside square brackets -> ex: 
     ```ruby
