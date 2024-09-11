@@ -1,4 +1,4 @@
-# Radha Programming Language
+# The Radha Programming Language
 
 A basic programming language that includes features of both Python and JavaScript created by Axnjr (Yakshit Chhipa) as a personal project to include in my resume .
 
